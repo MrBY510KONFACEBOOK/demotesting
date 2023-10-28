@@ -1,6 +1,26 @@
-// facebook.js
 const axios = require('axios');
+const fs = require('fs').promises;
 const { MessageMedia } = require('whatsapp-web.js');
+
+async function downloadMedia(url, localPath) {
+    try {
+        const response = await axios.get(url, { responseType: 'arraybuffer' });
+        await fs.writeFile(localPath, Buffer.from(response.data));
+        return localPath;
+    } catch (error) {
+        console.error('Error downloading media:', error);
+        return null;
+    }
+}
+
+// Add the extractLinks function at the bottom of the file
+function extractLinks(decodedData) {
+    if (decodedData && decodedData.links) {
+        const links = decodedData.links;
+        return Object.entries(links);
+    }
+    return null;
+}
 
 async function getFacebookInfo(message, args) {
     if (args.length < 2) {
@@ -25,9 +45,14 @@ async function getFacebookInfo(message, args) {
             const links = extractLinks(responseData);
             if (links) {
                 for (const [key, value] of links) {
-                    // Send media from URL
-                    const media = await MessageMedia.fromUrl(value);
-                    await message.reply(`Key: ${key}, Value: ${value}`, media);
+                    // Download and send media for each link
+                    const localPath = await downloadMedia(value, `./media/${key}.mp4`);
+                    if (localPath) {
+                        const media = MessageMedia.fromFilePath(localPath);
+                        await message.reply(`Key: ${key}, Value: ${value}`, media);
+                    } else {
+                        console.error('Failed to download media from link:', value);
+                    }
                 }
             } else {
                 message.reply('Failed to extract links from the Facebook response.');
