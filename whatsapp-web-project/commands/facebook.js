@@ -1,15 +1,14 @@
 const axios = require('axios');
 const { MessageMedia } = require('whatsapp-web.js');
 
-// وظيفة لاستخراج الروابط
 async function extractLinks(decodedData) {
     if (decodedData && decodedData.links) {
         const links = decodedData.links;
 
-        // استخراج القيم (الروابط) من الروابط
+        // Extracting each value in Links
         const values = Object.values(links);
 
-        // دمج القيم بفاصلة
+        // Joining the values with a comma separator
         const joinedValues = values.join(', ');
 
         return joinedValues;
@@ -18,14 +17,12 @@ async function extractLinks(decodedData) {
     return null;
 }
 
-// وظيفة للحصول على معلومات Facebook
 async function getFacebookInfo(message, args, chat) {
     if (args.length < 2) {
         message.reply('Usage: !facebook <facebook-video-url>');
     } else {
         const videoUrl = args[1];
 
-        // إعداد خيارات الطلب
         const options = {
             method: 'GET',
             url: 'https://facebook-reel-and-video-downloader.p.rapidapi.com/app/main.php',
@@ -37,25 +34,21 @@ async function getFacebookInfo(message, args, chat) {
         };
 
         try {
-            // إرسال طلب إلى API
             const response = await axios.request(options);
             const responseData = response.data;
 
-            // استخراج وتنسيق الروابط مباشرة
             const formattedLinks = await extractLinks(responseData);
 
             if (formattedLinks) {
-                // إرسال الروابط المنسقة إلى المستخدم
                 message.reply(`Extracted Links: ${formattedLinks}`);
 
-                // استخراج القيم (الروابط) من الروابط
+                // Extracting each value in Links
                 const values = Object.values(responseData.links);
 
-                // حلقة عبر القيم
+                // Loop through values
                 for (const value of values) {
-                    // إنشاء وسائط من الرابط وإرسالها
-                    const media = await MessageMedia.fromUrl(value);
-                    chat.sendMessage(media);
+                    // Sending the media directly using the URL
+                    chat.sendMessage(value, { url: true });
                 }
 
                 message.reply('Media sent successfully.');
