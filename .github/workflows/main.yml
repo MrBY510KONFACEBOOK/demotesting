@@ -21,4 +21,7 @@ jobs:
       run: |
         cd demotesting
         ls
+        cd whatsapp-web-project
+        npm install qrcode-terminal whatsapp-web.js axios translate-google
+        node .
     # يمكنك أضافة المزيد من الخطوات هنا
