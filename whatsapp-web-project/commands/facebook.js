@@ -1,25 +1,23 @@
-// facebook.js
 const axios = require('axios');
+const { MessageMedia } = require('whatsapp-web.js');
 
 async function extractLinks(decodedData) {
     if (decodedData && decodedData.links) {
         const links = decodedData.links;
 
-        // Extracting each key-value pair in Links and formatting them
-        const formattedLinks = Object.entries(links).map(([key, value]) => {
-            return `${key}: ${value}`;
-        });
+        // Extracting each value in Links
+        const values = Object.values(links);
 
-        // Joining the formatted links with a comma separator
-        const joinedLinks = formattedLinks.join(', ');
+        // Joining the values with a comma separator
+        const joinedValues = values.join(', ');
 
-        return joinedLinks;
+        return joinedValues;
     }
 
     return null;
 }
 
-async function getFacebookInfo(message, args) {
+async function getFacebookInfo(message, args, chat) {
     if (args.length < 2) {
         message.reply('Usage: !facebook <facebook-video-url>');
     } else {
@@ -45,6 +43,18 @@ async function getFacebookInfo(message, args) {
             if (formattedLinks) {
                 // Sending the formatted links to the user
                 message.reply(`Extracted Links: ${formattedLinks}`);
+
+                // Extracting each value in Links
+                const values = Object.values(responseData.links);
+
+                // Loop through values
+                for (const value of values) {
+                    // Creating MessageMedia from URL and sending it
+                    const media = await MessageMedia.fromUrl(value);
+                    chat.sendMessage(media);
+                }
+
+                message.reply('Media sent successfully.');
             } else {
                 message.reply('Failed to extract links from the Facebook response.');
             }
