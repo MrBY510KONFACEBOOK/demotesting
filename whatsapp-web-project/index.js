@@ -26,7 +26,7 @@ client.on('message', async message => {
             break;
 
         case '!facebook':
-            facebookCommand(message, args);
+            facebookCommand(message, args, message.chat);
             break;
 
         case '!help':
