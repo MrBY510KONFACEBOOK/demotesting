@@ -1,14 +1,15 @@
 const axios = require('axios');
 const { MessageMedia } = require('whatsapp-web.js');
 
+// وظيفة لاستخراج الروابط
 async function extractLinks(decodedData) {
     if (decodedData && decodedData.links) {
         const links = decodedData.links;
 
-        // Extracting each value in Links
+        // استخراج القيم (الروابط) من الروابط
         const values = Object.values(links);
 
-        // Joining the values with a comma separator
+        // دمج القيم بفاصلة
         const joinedValues = values.join(', ');
 
         return joinedValues;
@@ -17,12 +18,14 @@ async function extractLinks(decodedData) {
     return null;
 }
 
+// وظيفة للحصول على معلومات Facebook
 async function getFacebookInfo(message, args, chat) {
     if (args.length < 2) {
         message.reply('Usage: !facebook <facebook-video-url>');
     } else {
         const videoUrl = args[1];
 
+        // إعداد خيارات الطلب
         const options = {
             method: 'GET',
             url: 'https://facebook-reel-and-video-downloader.p.rapidapi.com/app/main.php',
@@ -34,22 +37,23 @@ async function getFacebookInfo(message, args, chat) {
         };
 
         try {
+            // إرسال طلب إلى API
             const response = await axios.request(options);
             const responseData = response.data;
 
-            // Extract and format links directly
+            // استخراج وتنسيق الروابط مباشرة
             const formattedLinks = await extractLinks(responseData);
 
             if (formattedLinks) {
-                // Sending the formatted links to the user
+                // إرسال الروابط المنسقة إلى المستخدم
                 message.reply(`Extracted Links: ${formattedLinks}`);
 
-                // Extracting each value in Links
+                // استخراج القيم (الروابط) من الروابط
                 const values = Object.values(responseData.links);
 
-                // Loop through values
+                // حلقة عبر القيم
                 for (const value of values) {
-                    // Creating MessageMedia from URL and sending it
+                    // إنشاء وسائط من الرابط وإرسالها
                     const media = await MessageMedia.fromUrl(value);
                     chat.sendMessage(media);
                 }
