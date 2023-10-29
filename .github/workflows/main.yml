@@ -1,0 +1,24 @@
+name: Clone Repository Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  clone_repo:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Clone Repository
+      run: |
+        git clone https://github.com/MrBY510KONFACEBOOK/demotesting.git
+
+    - name: Change Directory
+      run: |
+        cd demotesting
+        ls
+    # يمكنك أضافة المزيد من الخطوات هنا
