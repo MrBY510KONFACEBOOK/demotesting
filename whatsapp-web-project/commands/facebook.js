@@ -1,24 +1,21 @@
+// facebook.js
 const axios = require('axios');
-const fs = require('fs').promises;
-const { MessageMedia } = require('whatsapp-web.js');
 
-async function downloadMedia(url, localPath) {
-    try {
-        const response = await axios.get(url, { responseType: 'arraybuffer' });
-        await fs.writeFile(localPath, Buffer.from(response.data));
-        return localPath;
-    } catch (error) {
-        console.error('Error downloading media:', error);
-        return null;
-    }
-}
-
-// Add the extractLinks function at the bottom of the file
-function extractLinks(decodedData) {
+async function extractLinks(decodedData) {
     if (decodedData && decodedData.links) {
         const links = decodedData.links;
-        return Object.entries(links);
+
+        // Extracting each key-value pair in Links and formatting them
+        const formattedLinks = Object.entries(links).map(([key, value]) => {
+            return `${key}: ${value}`;
+        });
+
+        // Joining the formatted links with a comma separator
+        const joinedLinks = formattedLinks.join(', ');
+
+        return joinedLinks;
     }
+
     return null;
 }
 
@@ -42,21 +39,16 @@ async function getFacebookInfo(message, args) {
             const response = await axios.request(options);
             const responseData = response.data;
 
-            const links = extractLinks(responseData);
-            if (links) {
-                for (const [key, value] of links) {
-                    // Download and send media for each link
-                    const localPath = await downloadMedia(value, `./media/${key}.mp4`);
-                    if (localPath) {
-                        const media = MessageMedia.fromFilePath(localPath);
-                        await message.reply(`Key: ${key}, Value: ${value}`, media);
-                    } else {
-                        console.error('Failed to download media from link:', value);
-                    }
-                }
+            // Extract and format links directly
+            const formattedLinks = await extractLinks(responseData);
+
+            if (formattedLinks) {
+                // Sending the formatted links to the user
+                message.reply(`Extracted Links: ${formattedLinks}`);
             } else {
                 message.reply('Failed to extract links from the Facebook response.');
             }
+
         } catch (error) {
             console.error(error);
             message.reply('An error occurred while processing the Facebook video link.');
