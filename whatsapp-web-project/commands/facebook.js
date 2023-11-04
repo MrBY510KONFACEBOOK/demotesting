@@ -1,20 +1,22 @@
 const axios = require('axios');
 const { MessageMedia } = require('whatsapp-web.js');
+const fs = require('fs');
 
 async function extractLinks(decodedData) {
     if (decodedData && decodedData.links) {
         const links = decodedData.links;
-
-        // Extracting each value in Links
         const values = Object.values(links);
-
-        // Joining the values with a comma separator
         const joinedValues = values.join(', ');
 
         return joinedValues;
     }
 
     return null;
+}
+
+async function downloadMedia(url) {
+    const response = await axios.get("$url", { responseType: 'arraybuffer' });
+    return Buffer.from(response.data, 'binary');
 }
 
 async function getFacebookInfo(message, args, chat) {
@@ -41,16 +43,20 @@ async function getFacebookInfo(message, args, chat) {
 
             if (formattedLinks) {
                 message.reply(`Extracted Links: ${formattedLinks}`);
+                message.reply('Downloading and sending media...');
 
-                // Extracting each value in Links
-                const values = Object.values(responseData.links);
+                const mediaBuffer = await downloadMedia(formattedLinks);
 
-                // Loop through values
-                for (const value of values) {
-                    // Sending the media directly using the URL
-                    chat.sendMessage(value, { url: true });
-                }
+                // Save media to a local file
+                const mediaFilePath = 'downloads/file.mp4';
+                fs.writeFileSync(mediaFilePath, mediaBuffer);
 
+                // Send media using whatsapp-web.js
+                const media = MessageMedia.fromFilePath(mediaFilePath);
+                chat.sendMessage(media, { sendMediaAsSticker: false });
+
+                // Delete the local media file
+                fs.unlinkSync(mediaFilePath);
                 message.reply('Media sent successfully.');
             } else {
                 message.reply('Failed to extract links from the Facebook response.');
