@@ -54,10 +54,8 @@ async function getFacebookInfo(message, args, chat, options) {
                 // Send media using whatsapp-web.js
                 const media = MessageMedia.fromFilePath(mediaFilePath);
 
-                // Send link to media to sender
-                const link = `https://wa.me/?text=${media.url}`;
-                message.reply('Media sent successfully.');
-                message.reply(link);
+                // Send media to recipient
+                chat.sendMessage(media);
 
                 // Delete the local media file
                 fs.unlinkSync(mediaFilePath);
