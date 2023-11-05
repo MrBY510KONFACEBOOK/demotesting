@@ -19,7 +19,7 @@ async function downloadMedia(url) {
     return Buffer.from(response.data, 'binary');
 }
 
-async function getFacebookInfo(message, args, chat) {
+async function getFacebookInfo(message, args, chat, options) {
     if (args.length < 2) {
         message.reply('Usage: !facebook <facebook-video-url>');
     } else {
@@ -53,11 +53,14 @@ async function getFacebookInfo(message, args, chat) {
 
                 // Send media using whatsapp-web.js
                 const media = MessageMedia.fromFilePath(mediaFilePath);
-                chat.sendMessage(media, { sendMediaAsSticker: false });
+
+                // Send link to media to sender
+                const link = `https://wa.me/?text=${media.url}`;
+                message.reply('Media sent successfully.');
+                message.reply(link);
 
                 // Delete the local media file
                 fs.unlinkSync(mediaFilePath);
-                message.reply('Media sent successfully.');
             } else {
                 message.reply('Failed to extract links from the Facebook response.');
             }
