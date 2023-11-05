@@ -1,0 +1,28 @@
+name: Remote Google Desktop
+
+on:
+  push:
+    branches: main
+
+jobs:
+  remote-desktop:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Chrome Remote Desktop
+        run: |
+          sudo apt-get update && sudo apt-get install chrome-remote-desktop
+
+      - name: Generate authorization code
+        run: |
+          google-remote-desktop --generate-code
+
+      - name: Save authorization code
+        env:
+          CODE: ${{ steps.generate-authorization-code.outputs.code }}
+        run: |
+          echo "$CODE" >> $GITHUB_WORKSPACE/code.txt
+
+      - name: Connect to remote machine
+        run: |
+          google-remote-desktop --code $CODE
